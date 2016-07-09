@@ -17,69 +17,64 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 public class JavaSerializer implements Serializer {
-    
-  private ClassLoader loader;
 
-  private final Log log = LogFactory.getLog(JavaSerializer.class);
+	private ClassLoader loader;
 
-  @Override
-    public void setClassLoader(ClassLoader loader) {
-	this.loader = loader;
-  }
+	private final Log log = LogFactory.getLog(JavaSerializer.class);
 
-  public byte[] attributesHashFrom(RedisSession session) throws IOException {
-    HashMap<String,Object> attributes = new HashMap<String,Object>();
-    for (Enumeration<String> enumerator = session.getAttributeNames(); enumerator.hasMoreElements();) {
-      String key = enumerator.nextElement();
-      attributes.put(key, session.getAttribute(key));
-    }
+	@Override
+	public void setClassLoader(ClassLoader loader) {
+		this.loader = loader;
+	}
 
-    byte[] serialized = null;
+	public byte[] attributesHashFrom(RedisSession session) throws IOException {
+		HashMap<String, Object> attributes = new HashMap<String, Object>();
+		for (Enumeration<String> enumerator = session.getAttributeNames(); enumerator.hasMoreElements();) {
+			String key = enumerator.nextElement();
+			attributes.put(key, session.getAttribute(key));
+		}
 
-    try (
-         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(bos));
-    ) {
-      oos.writeUnshared(attributes);
-      oos.flush();
-      serialized = bos.toByteArray();
-    }
+		byte[] serialized = null;
 
-    MessageDigest digester = null;
-    try {
-      digester = MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException e) {
-      log.error("Unable to get MessageDigest instance for MD5");
-    }
-    return digester.digest(serialized);
-  }
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(bos));) {
+			oos.writeUnshared(attributes);
+			oos.flush();
+			serialized = bos.toByteArray();
+		}
 
-  @Override
-  public byte[] serializeFrom(RedisSession session, SessionSerializationMetadata metadata) throws IOException {
-    byte[] serialized = null;
+		MessageDigest digester = null;
+		try {
+			digester = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			log.error("Unable to get MessageDigest instance for MD5");
+		}
+		return digester.digest(serialized);
+	}
 
-    try (
-         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(bos));
-    ) {
-      oos.writeObject(metadata);
-      session.writeObjectData(oos);
-      oos.flush();
-      serialized = bos.toByteArray();
-    }
+	@Override
+	public byte[] serializeFrom(RedisSession session, SessionSerializationMetadata metadata) throws IOException {
+		byte[] serialized = null;
 
-    return serialized;
-  }
+		try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(bos));) {
+			oos.writeObject(metadata);
+			session.writeObjectData(oos);
+			oos.flush();
+			serialized = bos.toByteArray();
+		}
 
-  @Override
-  public void deserializeInto(byte[] data, RedisSession session, SessionSerializationMetadata metadata) throws IOException, ClassNotFoundException {
-    try(
-        BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(data));
-        ObjectInputStream ois = new CustomObjectInputStream(bis, loader);
-    ) {
-      SessionSerializationMetadata serializedMetadata = (SessionSerializationMetadata)ois.readObject();
-      metadata.copyFieldsFrom(serializedMetadata);
-      session.readObjectData(ois);
-    }
-  }
+		return serialized;
+	}
+
+	@Override
+	public void deserializeInto(byte[] data, RedisSession session, SessionSerializationMetadata metadata)
+			throws IOException, ClassNotFoundException {
+		try (BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(data));
+				ObjectInputStream ois = new CustomObjectInputStream(bis, loader);) {
+			SessionSerializationMetadata serializedMetadata = (SessionSerializationMetadata) ois.readObject();
+			metadata.copyFieldsFrom(serializedMetadata);
+			session.readObjectData(ois);
+		}
+	}
 }
