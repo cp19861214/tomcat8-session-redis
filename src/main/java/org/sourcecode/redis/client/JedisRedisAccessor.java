@@ -54,7 +54,7 @@ public class JedisRedisAccessor implements RedisAccessor {
 		return execute(new JedisExecutor<String>() {
 			public String execute(Jedis jedis) {
 				String r = jedis.set(key, value);
-				if (expire != -1) {
+				if (expire > 0) {
 					setExpired(jedis, key, expire);
 				}
 				return r;
