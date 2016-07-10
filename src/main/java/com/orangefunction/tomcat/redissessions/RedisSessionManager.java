@@ -709,8 +709,14 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 				connectionPool = new JedisPool(this.connectionPoolConfig, getHost(), getPort(), getTimeout(),
 						getPassword());
 			}
+			log.info("redis poolconfig : database = " + database + ",maxWaitMillis = "
+					+ connectionPoolConfig.getMaxWaitMillis() + ",connectionPoolMaxTotal = "
+					+ connectionPoolConfig.getMaxTotal() + ",connectionPoolMaxIdle = "
+					+ connectionPoolConfig.getMaxIdle() + ",connectionPoolMinIdle = "
+					+ connectionPoolConfig.getMinIdle() + ",testOnBorrow = " + connectionPoolConfig.getTestOnBorrow());
 		} catch (Exception e) {
 			e.printStackTrace();
+			log.error("Error connecting to Redis", e);
 			throw new LifecycleException("Error connecting to Redis", e);
 		}
 	}
