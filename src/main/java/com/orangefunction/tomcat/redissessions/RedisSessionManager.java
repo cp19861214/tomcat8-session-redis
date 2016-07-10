@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -21,10 +20,10 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
+import redis.clients.jedis.BinaryJedisCluster;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
 import redis.clients.util.Pool;
 
@@ -51,10 +50,13 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	protected String host = "localhost";
 	protected int port = 6379;
 	protected int database = 2;
+
+	protected String clusterHosts;// clusters
+	protected BinaryJedisCluster jedisCluster;
+
 	protected String password = null;
 	protected int timeout = Protocol.DEFAULT_TIMEOUT;
-	protected String sentinelMaster = null;
-	Set<String> sentinelSet = null;
+	protected String sessionKeyPrefix = "tomcat:";
 
 	protected Pool<Jedis> connectionPool;
 	protected JedisPoolConfig connectionPoolConfig = new JedisPoolConfig();
@@ -149,38 +151,6 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
 	public boolean getAlwaysSaveAfterRequest() {
 		return this.sessionPersistPoliciesSet.contains(SessionPersistPolicy.ALWAYS_SAVE_AFTER_REQUEST);
-	}
-
-	public String getSentinels() {
-		StringBuilder sentinels = new StringBuilder();
-		for (Iterator<String> iter = this.sentinelSet.iterator(); iter.hasNext();) {
-			sentinels.append(iter.next());
-			if (iter.hasNext()) {
-				sentinels.append(",");
-			}
-		}
-		return sentinels.toString();
-	}
-
-	public void setSentinels(String sentinels) {
-		if (null == sentinels) {
-			sentinels = "";
-		}
-
-		String[] sentinelArray = sentinels.split(",");
-		this.sentinelSet = new HashSet<String>(Arrays.asList(sentinelArray));
-	}
-
-	public Set<String> getSentinelSet() {
-		return this.sentinelSet;
-	}
-
-	public String getSentinelMaster() {
-		return this.sentinelMaster;
-	}
-
-	public void setSentinelMaster(String master) {
-		this.sentinelMaster = master;
 	}
 
 	@Override
@@ -696,19 +666,10 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
 	private void initializeDatabaseConnection() throws LifecycleException {
 		try {
-			if (getSentinelMaster() != null) {
-				Set<String> sentinelSet = getSentinelSet();
-				if (sentinelSet != null && sentinelSet.size() > 0) {
-					connectionPool = new JedisSentinelPool(getSentinelMaster(), sentinelSet, this.connectionPoolConfig,
-							getTimeout(), getPassword());
-				} else {
-					throw new LifecycleException(
-							"Error configuring Redis Sentinel connection pool: expected both `sentinelMaster` and `sentiels` to be configured");
-				}
-			} else {
-				connectionPool = new JedisPool(this.connectionPoolConfig, getHost(), getPort(), getTimeout(),
-						getPassword());
-			}
+
+			connectionPool = new JedisPool(this.connectionPoolConfig, getHost(), getPort(), getTimeout(),
+					getPassword());
+
 			log.info("redis poolconfig : database = " + database + ",maxWaitMillis = "
 					+ connectionPoolConfig.getMaxWaitMillis() + ",connectionPoolMaxTotal = "
 					+ connectionPoolConfig.getMaxTotal() + ",connectionPoolMaxIdle = "
@@ -888,6 +849,27 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	public void setJmxNamePrefix(String jmxNamePrefix) {
 		this.connectionPoolConfig.setJmxNamePrefix(jmxNamePrefix);
 	}
+
+	public String getSessionKeyPrefix() {
+		return sessionKeyPrefix;
+	}
+
+	public void setSessionKeyPrefix(String sessionKeyPrefix) {
+		this.sessionKeyPrefix = sessionKeyPrefix;
+	}
+
+	public String getClusterHosts() {
+		return clusterHosts;
+	}
+
+	public void setClusterHosts(String clusterHosts) {
+		this.clusterHosts = clusterHosts;
+	}
+
+	public BinaryJedisCluster getJedisCluster() {
+		return jedisCluster;
+	}
+
 }
 
 class DeserializedSessionContainer {
