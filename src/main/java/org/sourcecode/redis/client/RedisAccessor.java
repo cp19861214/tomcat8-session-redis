@@ -8,6 +8,8 @@ public interface RedisAccessor {
 
 	String set(byte[] key, byte[] value);
 
+	String set(byte[] key, byte[] value, long expire);
+
 	long del(byte[]... key);
 
 	long expire(byte[] key, long expire);

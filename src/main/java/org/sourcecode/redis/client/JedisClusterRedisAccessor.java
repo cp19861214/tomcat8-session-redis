@@ -58,4 +58,10 @@ public class JedisClusterRedisAccessor implements RedisAccessor {
 		return null;
 	}
 
+	@Override
+	public String set(byte[] key, byte[] value, long expire) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

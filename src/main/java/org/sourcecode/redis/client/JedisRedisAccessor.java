@@ -210,4 +210,13 @@ public class JedisRedisAccessor implements RedisAccessor {
 		this.database = database;
 	}
 
+	public static void main(String[] args) {
+		RedisAccessor ra = JedisRedisAccessor.getRedisAccessor(new JedisPoolConfig(), "172.16.97.5", 6379, 3);
+		String key = "abc";
+		String result = ra.set(key.getBytes(), "我是谁".getBytes(), -1);
+		byte[] value = ra.get(key.getBytes());
+		System.out.println(ra.setnx(key.getBytes(), "22".getBytes()));
+		System.out.println(ra.exists(key.getBytes()));
+		System.out.println(result + "," + new String(value));
+	}
 }
