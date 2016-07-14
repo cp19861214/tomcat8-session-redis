@@ -311,21 +311,13 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 			// Ensure generation of a unique session identifier.
 			if (null != requestedSessionId) {
 				sessionId = sessionIdWithJvmRoute(requestedSessionId, jvmRoute);
-				if (jedis.setnx(sessionId.getBytes(), NULL_SESSION) == 0L) {
+				if (jedis.exists(sessionId.getBytes())) {
 					sessionId = null;
 				}
 			} else {
 				do {
 					sessionId = sessionIdWithJvmRoute(generateSessionId(), jvmRoute);
-				} while (jedis.setnx(sessionId.getBytes(), NULL_SESSION) == 0L); // 1
-				// =
-				// key
-				// set;
-				// 0
-				// =
-				// key
-				// already
-				// existed
+				} while (jedis.exists(sessionId.getBytes())); // 1
 			}
 
 			/*
@@ -606,8 +598,6 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 		} catch (IOException e) {
 			log.error(e.getMessage());
 			throw e;
-		} finally {
-			return error;
 		}
 	}
 
