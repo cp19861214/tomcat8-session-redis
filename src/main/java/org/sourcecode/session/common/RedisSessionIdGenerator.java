@@ -16,7 +16,7 @@ public class RedisSessionIdGenerator extends StandardSessionIdGenerator {
 		String sessionId = super.generateSessionId(route);
 		String sRand = "";
 		Random random = new Random();
-		for (int i = 0; i < 8; i++) {
+		for (int i = 0; i < 10; i++) {
 			String rand = words[random.nextInt(words.length)];
 			sRand += rand;
 		}

@@ -3,7 +3,6 @@ package com.orangefunction.tomcat.redissessions;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.Iterator;
 
 import org.apache.catalina.Context;
@@ -315,38 +314,37 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 		Boolean error = true;
 		Jedis jedis = null;
 		try {
-			jedis = acquireConnection();
 			if (sessionId == null) {
 				sessionId = sessionIdWithJvmRoute(generateSessionId(), jvmRoute);
 			} else {
-				log.warn("requestSessionId:" + sessionId);
+				log.warn("abnormality requestSessionId:" + sessionId);
 			}
-			if (sessionId != null) {
-				session = (RedisSession) createEmptySession();
-				session.setNew(true);
-				session.setValid(true);
-				session.setCreationTime(System.currentTimeMillis());
-				session.setMaxInactiveInterval(getMaxInactiveInterval());
-				session.setId(sessionId);
-				session.tellNew();
-				sessionCounter++;
-			}
+
+			session = (RedisSession) createEmptySession();
+			session.setNew(true);
+			session.setValid(true);
+			session.setCreationTime(System.currentTimeMillis());
+			session.setMaxInactiveInterval(getMaxInactiveInterval());
+			session.setId(sessionId);
+			session.tellNew();
+			sessionCounter++;
 
 			currentSession.set(session);
 			currentSessionId.set(sessionId);
 			currentSessionIsPersisted.set(false);
 			currentSessionSerializationMetadata.set(new SessionSerializationMetadata());
 
-			if (session != null) {
-				try {
-					error = saveInternal(jedis, session, true);
-				} catch (IOException ex) {
-					log.error("Error saving newly created session: " + ex.getMessage());
-					currentSession.set(null);
-					currentSessionId.set(null);
-					session = null;
-				}
+			jedis = acquireConnection();
+
+			try {
+				error = saveInternal(jedis, session, true);
+			} catch (IOException ex) {
+				log.error("Error saving newly created session: " + ex.getMessage());
+				currentSession.set(null);
+				currentSessionId.set(null);
+				session = null;
 			}
+
 		} finally {
 			if (jedis != null) {
 				returnConnection(jedis, error);
@@ -383,7 +381,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	public Session findSession(String id) throws IOException {
 		RedisSession session = null;
 
-		if (null == id) {
+		if (id == null) {
 			currentSessionIsPersisted.set(false);
 			currentSession.set(null);
 			currentSessionSerializationMetadata.set(null);
@@ -456,13 +454,6 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 			session.setValid(true);
 			session.resetDirtyTracking();
 
-			if (log.isTraceEnabled()) {
-				log.trace("Session Contents [" + id + "]:");
-				Enumeration en = session.getAttributeNames();
-				while (en.hasMoreElements()) {
-					log.trace("  " + en.nextElement());
-				}
-			}
 		} catch (ClassNotFoundException ex) {
 			log.fatal("Unable to deserialize into session", ex);
 			throw new IOException("Unable to deserialize into session", ex);
