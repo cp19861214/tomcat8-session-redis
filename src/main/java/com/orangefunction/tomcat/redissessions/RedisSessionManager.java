@@ -65,6 +65,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	protected ThreadLocal<SessionSerializationMetadata> currentSessionSerializationMetadata = new ThreadLocal<>();
 	protected ThreadLocal<String> currentSessionId = new ThreadLocal<>();
 	protected ThreadLocal<Boolean> currentSessionIsPersisted = new ThreadLocal<>();
+
 	protected Serializer serializer;
 
 	protected static String name = "RedisSessionManager";
@@ -172,6 +173,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 		return jedis;
 	}
 
+	@SuppressWarnings("deprecation")
 	protected void returnConnection(Jedis jedis, Boolean error) {
 		if (error) {
 			connectionPool.returnBrokenResource(jedis);
@@ -233,6 +235,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	 *                if this component detects a fatal error that prevents this
 	 *                component from being used
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	protected synchronized void startInternal() throws LifecycleException {
 		super.startInternal();
@@ -518,6 +521,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 			}
 			jedis.expire(binaryId, getMaxInactiveInterval());
 			error = false;
+			log.info("expire session " + session.getId());
 			return error;
 		} catch (IOException e) {
 			log.error(e.getMessage());
@@ -565,6 +569,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 				currentSession.remove();
 				currentSessionId.remove();
 				currentSessionIsPersisted.remove();
+				currentSessionSerializationMetadata.remove();
 				log.trace("Session removed from ThreadLocal :" + redisSession.getIdInternal());
 			}
 		}

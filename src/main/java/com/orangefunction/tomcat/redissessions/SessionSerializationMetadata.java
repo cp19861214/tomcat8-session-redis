@@ -1,7 +1,6 @@
 package com.orangefunction.tomcat.redissessions;
 
-import java.io.IOException;
-import java.io.ObjectStreamException;
+
 import java.io.Serializable;
 
 public class SessionSerializationMetadata implements Serializable {
@@ -26,7 +25,7 @@ public class SessionSerializationMetadata implements Serializable {
 		this.setSessionAttributesHash(metadata.getSessionAttributesHash());
 	}
 
-	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+/*	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
 		out.writeInt(sessionAttributesHash.length);
 		out.write(this.sessionAttributesHash);
 	}
@@ -40,6 +39,6 @@ public class SessionSerializationMetadata implements Serializable {
 
 	public void readObjectNoData() throws ObjectStreamException {
 		this.sessionAttributesHash = new byte[0];
-	}
+	}*/
 
 }
