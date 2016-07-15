@@ -308,30 +308,19 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	}
 
 	@Override
-	public Session createSession(String requestedSessionId) {
+	public Session createSession(String sessionId) {
 		RedisSession session = null;
-		String sessionId = null;
 		String jvmRoute = getJvmRoute();
-		System.out.println("jvmRoute:" + jvmRoute + ",requestedSessionId:" + requestedSessionId);
+
 		Boolean error = true;
 		Jedis jedis = null;
 		try {
 			jedis = acquireConnection();
-
-			// Ensure generation of a unique session identifier.
-			if (requestedSessionId != null) {
-				sessionId = sessionIdWithJvmRoute(requestedSessionId, jvmRoute);
-				if (jedis.exists(sessionId.getBytes())) {
-					sessionId = null;
-				}
+			if (sessionId == null) {
+				sessionId = sessionIdWithJvmRoute(generateSessionId(), jvmRoute);
 			} else {
-				do {
-					sessionId = sessionIdWithJvmRoute(generateSessionId(), jvmRoute);
-				} while (jedis.exists(sessionId.getBytes())); // 1
+				log.warn("requestSessionId:" + sessionId);
 			}
-
-			error = false;
-
 			if (sessionId != null) {
 				session = (RedisSession) createEmptySession();
 				session.setNew(true);
