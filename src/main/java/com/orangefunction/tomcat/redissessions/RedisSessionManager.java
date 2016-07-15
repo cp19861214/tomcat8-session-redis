@@ -516,12 +516,13 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 				redisSession.resetDirtyTracking();
 				currentSessionSerializationMetadata.set(updatedSerializationMetadata);
 				currentSessionIsPersisted.set(true);
+				log.info("save session " + session.getId());
 			} else {
 				log.trace("Save was determined to be unnecessary");
 			}
 			jedis.expire(binaryId, getMaxInactiveInterval());
 			error = false;
-			log.info("expire session " + session.getId());
+
 			return error;
 		} catch (IOException e) {
 			log.error(e.getMessage());
