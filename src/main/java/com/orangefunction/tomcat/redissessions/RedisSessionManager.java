@@ -498,6 +498,9 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 			Boolean isCurrentSessionPersisted;
 			SessionSerializationMetadata sessionSerializationMetadata = currentSessionSerializationMetadata.get();
 			byte[] originalSessionAttributesHash = sessionSerializationMetadata.getSessionAttributesHash();
+			System.out.println("isCurrentSessionPersisted:" + this.currentSessionIsPersisted.get() + ",check:"
+					+ Arrays.equals(originalSessionAttributesHash, serializer.attributesHashFrom(redisSession))
+					+ ",dirty:" + redisSession.isDirty());
 			byte[] sessionAttributesHash = null;
 			if (forceSave || redisSession.isDirty()
 					|| (isCurrentSessionPersisted = this.currentSessionIsPersisted.get() == null)
@@ -516,7 +519,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 				redisSession.resetDirtyTracking();
 				currentSessionSerializationMetadata.set(updatedSerializationMetadata);
 				currentSessionIsPersisted.set(true);
-				log.info("save session " + session.getId());
+				log.info("save session " + session.getId() + " success ");
 			} else {
 				log.trace("Save was determined to be unnecessary");
 			}
@@ -559,6 +562,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 			try {
 				if (redisSession.isValid()) {
 					log.trace("Request with session completed, saving session " + redisSession.getId());
+					System.out.println("开始保存:" + getSaveOnChange() + "," + getAlwaysSaveAfterRequest());
 					save(redisSession, getAlwaysSaveAfterRequest());
 				} else {
 					log.trace("HTTP Session has been invalidated, removing :" + redisSession.getId());
