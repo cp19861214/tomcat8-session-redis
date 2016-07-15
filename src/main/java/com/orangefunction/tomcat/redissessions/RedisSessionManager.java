@@ -495,17 +495,19 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
 			byte[] binaryId = redisSession.getId().getBytes();
 
-			Boolean isCurrentSessionPersisted;
+			Boolean isCurrentSessionPersisted = this.currentSessionIsPersisted.get();
 			SessionSerializationMetadata sessionSerializationMetadata = currentSessionSerializationMetadata.get();
+
 			byte[] originalSessionAttributesHash = sessionSerializationMetadata.getSessionAttributesHash();
-			System.out.println("isCurrentSessionPersisted:" + this.currentSessionIsPersisted.get() + ",check:"
-					+ Arrays.equals(originalSessionAttributesHash, serializer.attributesHashFrom(redisSession))
-					+ ",dirty:" + redisSession.isDirty());
-			byte[] sessionAttributesHash = null;
-			if (forceSave || redisSession.isDirty()
-					|| (isCurrentSessionPersisted = this.currentSessionIsPersisted.get() == null)
-					|| !isCurrentSessionPersisted || !Arrays.equals(originalSessionAttributesHash,
-							(sessionAttributesHash = serializer.attributesHashFrom(redisSession)))) {
+
+			byte[] sessionAttributesHash = serializer.attributesHashFrom(redisSession);
+
+			System.out.println("isCurrentSessionPersisted:" + isCurrentSessionPersisted + ",check:"
+					+ Arrays.equals(originalSessionAttributesHash, sessionAttributesHash) + ",dirty:"
+					+ redisSession.isDirty() + ",meta:" + originalSessionAttributesHash + ":" + sessionAttributesHash);
+
+			if (forceSave || redisSession.isDirty() || isCurrentSessionPersisted == null || !isCurrentSessionPersisted
+					|| !Arrays.equals(originalSessionAttributesHash, sessionAttributesHash)) {
 
 				if (sessionAttributesHash == null) {
 					sessionAttributesHash = serializer.attributesHashFrom(redisSession);
