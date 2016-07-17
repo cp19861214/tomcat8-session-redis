@@ -15,10 +15,10 @@ public class CommonErrorReportValve extends ErrorReportValve {
 	@Override
 	protected void report(Request request, Response response, Throwable throwable) {
 		String stackTrace = getPartialServletStackTrace(throwable);
-		log.error(stackTrace);
 		int statusCode = response.getStatus();
 		try {
-			response.sendError(statusCode);
+			log.error("statusCode = " + statusCode + ",exception = " + stackTrace);
+			response.sendError(statusCode, "System is Occur a Error ...");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
