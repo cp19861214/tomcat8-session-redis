@@ -1,4 +1,4 @@
-package org.sourcecode.session.common;
+package org.sourcecode.tomcat.session;
 
 import java.util.Random;
 

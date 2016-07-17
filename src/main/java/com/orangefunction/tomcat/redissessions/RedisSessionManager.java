@@ -17,7 +17,7 @@ import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-import org.sourcecode.session.common.RedisSessionIdGenerator;
+import org.sourcecode.tomcat.session.RedisSessionIdGenerator;
 
 import redis.clients.jedis.BinaryJedisCluster;
 import redis.clients.jedis.Jedis;
