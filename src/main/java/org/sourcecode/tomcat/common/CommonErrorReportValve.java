@@ -32,7 +32,8 @@ public class CommonErrorReportValve extends ErrorReportValve {
 			if (writer != null) {
 				// If writer is null, it's an indication that the response has
 				// been hard committed already, which should never happen
-				writer.write("<scrip>location.href='" + errorPage + "';</script>");
+				writer.write("<html><body>System is Occur a Error Please retry ..." + "<script>location.href='"
+						+ errorPage + "';" + "</script></body></html>");
 				response.finishResponse();
 			}
 		} catch (IOException e) {
