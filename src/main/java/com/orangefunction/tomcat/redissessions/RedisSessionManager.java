@@ -55,7 +55,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
 	protected String password = null;
 	protected int timeout = Protocol.DEFAULT_TIMEOUT;
-	protected String sessionKeyPrefix = "tomcat:";
+	protected String sessionIdPrefix = "";
 
 	protected Pool<Jedis> connectionPool;
 	protected JedisPoolConfig connectionPoolConfig = new JedisPoolConfig();
@@ -270,7 +270,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 
 		initializeDatabaseConnection();
 
-		setSessionIdGenerator(new RedisSessionIdGenerator());
+		setSessionIdGenerator(new RedisSessionIdGenerator(sessionIdPrefix));
 
 		setDistributable(true);
 	}
@@ -782,12 +782,12 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 		this.connectionPoolConfig.setJmxNamePrefix(jmxNamePrefix);
 	}
 
-	public String getSessionKeyPrefix() {
-		return sessionKeyPrefix;
+	public String getSessionIdPrefix() {
+		return sessionIdPrefix;
 	}
 
-	public void setSessionKeyPrefix(String sessionKeyPrefix) {
-		this.sessionKeyPrefix = sessionKeyPrefix;
+	public void setSessionIdPrefix(String sessionIdPrefix) {
+		this.sessionIdPrefix = sessionIdPrefix;
 	}
 
 	public String getClusterHosts() {
