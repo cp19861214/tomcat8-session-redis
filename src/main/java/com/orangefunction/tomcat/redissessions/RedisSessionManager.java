@@ -17,6 +17,7 @@ import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.sourcecode.redis.client.DefaultJedisPoolConfig;
 import org.sourcecode.tomcat.session.RedisSessionIdGenerator;
 
 import redis.clients.jedis.BinaryJedisCluster;
@@ -58,7 +59,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	protected String sessionIdPrefix = "";
 
 	protected Pool<Jedis> connectionPool;
-	protected JedisPoolConfig connectionPoolConfig = new JedisPoolConfig();
+	protected JedisPoolConfig connectionPoolConfig = new DefaultJedisPoolConfig();
 
 	protected RedisSessionHandlerValve handlerValve;
 	protected ThreadLocal<RedisSession> currentSession = new ThreadLocal<>();
@@ -606,7 +607,10 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 					+ connectionPoolConfig.getMaxWaitMillis() + ",connectionPoolMaxTotal = "
 					+ connectionPoolConfig.getMaxTotal() + ",connectionPoolMaxIdle = "
 					+ connectionPoolConfig.getMaxIdle() + ",connectionPoolMinIdle = "
-					+ connectionPoolConfig.getMinIdle() + ",testOnBorrow = " + connectionPoolConfig.getTestOnBorrow());
+					+ connectionPoolConfig.getMinIdle() + ",testOnBorrow = " + connectionPoolConfig.getTestOnBorrow()
+					+ ",MinEvictableIdleTimeMillis = " + connectionPoolConfig.getMinEvictableIdleTimeMillis()
+					+ ",TimeBetweenEvictionRunsMillis = " + connectionPoolConfig.getTimeBetweenEvictionRunsMillis()
+					+ ",TestWhileIdle = " + connectionPoolConfig.getTestWhileIdle());
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error connecting to Redis", e);
