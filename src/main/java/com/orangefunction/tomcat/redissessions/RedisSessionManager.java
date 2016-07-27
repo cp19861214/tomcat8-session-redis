@@ -610,7 +610,8 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 					+ connectionPoolConfig.getMinIdle() + ",testOnBorrow = " + connectionPoolConfig.getTestOnBorrow()
 					+ ",MinEvictableIdleTimeMillis = " + connectionPoolConfig.getMinEvictableIdleTimeMillis()
 					+ ",TimeBetweenEvictionRunsMillis = " + connectionPoolConfig.getTimeBetweenEvictionRunsMillis()
-					+ ",TestWhileIdle = " + connectionPoolConfig.getTestWhileIdle());
+					+ ",TestWhileIdle = " + connectionPoolConfig.getTestWhileIdle()
+					+ ",sessionIdPrefix = " + sessionIdPrefix);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error connecting to Redis", e);
