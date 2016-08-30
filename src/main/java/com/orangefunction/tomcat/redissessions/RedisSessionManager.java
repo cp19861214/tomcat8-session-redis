@@ -552,12 +552,13 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 					+ connectionPoolConfig.getMaxWaitMillis() + ",connectionPoolMaxTotal = "
 					+ connectionPoolConfig.getMaxTotal() + ",connectionPoolMaxIdle = "
 					+ connectionPoolConfig.getMaxIdle() + ",connectionPoolMinIdle = "
-					+ connectionPoolConfig.getMinIdle() + ",testOnBorrow = " + connectionPoolConfig.getTestOnBorrow()
-					+ ",MinEvictableIdleTimeMillis = " + connectionPoolConfig.getMinEvictableIdleTimeMillis()
-					+ ",TimeBetweenEvictionRunsMillis = " + connectionPoolConfig.getTimeBetweenEvictionRunsMillis()
-					+ ",TestWhileIdle = " + connectionPoolConfig.getTestWhileIdle() + ",sessionIdPrefix = "
-					+ sessionIdPrefix + ",host = " + host + ",maxRedirections = " + maxRedirections + ",cluster = "
-					+ cluster);
+					+ connectionPoolConfig.getMinIdle() + ",numTestsPerEvictionRun = "
+					+ connectionPoolConfig.getNumTestsPerEvictionRun() + ",testOnBorrow = "
+					+ connectionPoolConfig.getTestOnBorrow() + ",MinEvictableIdleTimeMillis = "
+					+ connectionPoolConfig.getMinEvictableIdleTimeMillis() + ",TimeBetweenEvictionRunsMillis = "
+					+ connectionPoolConfig.getTimeBetweenEvictionRunsMillis() + ",TestWhileIdle = "
+					+ connectionPoolConfig.getTestWhileIdle() + ",sessionIdPrefix = " + sessionIdPrefix + ",host = "
+					+ host + ",maxRedirections = " + maxRedirections + ",cluster = " + cluster);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error connecting to Redis", e);
