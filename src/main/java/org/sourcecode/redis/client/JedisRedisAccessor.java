@@ -1,7 +1,6 @@
 package org.sourcecode.redis.client;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
@@ -20,17 +19,19 @@ public class JedisRedisAccessor implements RedisAccessor {
 
 	private int database = 0;
 
+	private String host;
+
+	private int port;
+
 	public JedisRedisAccessor() {
 
 	}
 
-	public static final RedisAccessor getRedisAccessor(JedisPoolConfig jedisPoolConfig, String host, int port,
-			int database) {
-		JedisRedisAccessor jra = new JedisRedisAccessor();
-		JedisPool jedisPool = new JedisPool(jedisPoolConfig, host, port);
-		jra.setDatabase(database);
-		jra.setJedisPool(jedisPool);
-		return jra;
+	public JedisRedisAccessor(JedisPoolConfig jedisPoolConfig, String host, int port, int database) {
+		this.jedisPoolConfig = jedisPoolConfig;
+		this.host = host;
+		this.port = port;
+		this.database = database;
 	}
 
 	@Override
@@ -50,25 +51,24 @@ public class JedisRedisAccessor implements RedisAccessor {
 		return set(key, value, -1);
 	}
 
-	public String set(byte[] key, byte[] value, final long expire) {
+	public String set(byte[] key, byte[] value, final int expire) {
 		return execute(new JedisExecutor<String>() {
 			public String execute(Jedis jedis) {
 				String r = jedis.set(key, value);
 				if (expire > 0) {
-					setExpired(jedis, key, expire);
+					jedis.expire(key, expire);
 				}
 				return r;
 			}
 		});
 	}
 
-	public long expire(byte[] key, final long millsenconds) {
+	public long expire(byte[] key, final int seconds) {
 
 		return execute(new JedisExecutor<Long>() {
 
 			public Long execute(Jedis jedis) {
-				TimeUnit unit = TimeUnit.MILLISECONDS;
-				return jedis.expire(key, (int) unit.toSeconds(millsenconds));
+				return jedis.expire(key, seconds);
 
 			}
 
@@ -122,13 +122,6 @@ public class JedisRedisAccessor implements RedisAccessor {
 		return size;
 	}
 
-	private void setExpired(Jedis jedis, byte[] rawkey, long expire) {
-		if (expire != -1) {
-			TimeUnit unit = TimeUnit.MILLISECONDS;
-			jedis.expire(rawkey, (int) unit.toSeconds(expire));
-		}
-	}
-
 	public long setnx(final byte[] key, final byte[] member) {
 
 		return execute(new JedisExecutor<Long>() {
@@ -151,6 +144,17 @@ public class JedisRedisAccessor implements RedisAccessor {
 				return jedis.flushDB();
 			}
 		});
+	}
+
+	@Override
+	public void destroy() {
+		jedisPool.destroy();
+		log.info("destory jedis pool ...");
+	}
+
+	@Override
+	public void init() {
+		jedisPool = new JedisPool(jedisPoolConfig, host, port);
 	}
 
 	protected void returnJedis2Pool(Jedis jedis, boolean broken) {
@@ -211,12 +215,14 @@ public class JedisRedisAccessor implements RedisAccessor {
 	}
 
 	public static void main(String[] args) {
-		RedisAccessor ra = JedisRedisAccessor.getRedisAccessor(new JedisPoolConfig(), "172.16.97.5", 6379, 3);
+		RedisAccessor ra = new JedisRedisAccessor(new JedisPoolConfig(), "172.16.97.5", 6379, 3);
+		ra.init();
 		String key = "abc";
-		String result = ra.set(key.getBytes(), "我是谁".getBytes(), -1);
+		String result = ra.set(key.getBytes(), "a".getBytes(), 5);
 		byte[] value = ra.get(key.getBytes());
 		System.out.println(ra.setnx(key.getBytes(), "22".getBytes()));
 		System.out.println(ra.exists(key.getBytes()));
 		System.out.println(result + "," + new String(value));
 	}
+
 }

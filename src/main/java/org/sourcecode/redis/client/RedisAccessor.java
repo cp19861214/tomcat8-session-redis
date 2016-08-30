@@ -8,11 +8,11 @@ public interface RedisAccessor {
 
 	String set(byte[] key, byte[] value);
 
-	String set(byte[] key, byte[] value, long expire);
+	String set(byte[] key, byte[] value, int expire);
 
 	long del(byte[]... key);
 
-	long expire(byte[] key, long expire);
+	long expire(byte[] key, int expire);
 
 	byte[] get(byte[] key);
 
@@ -23,5 +23,9 @@ public interface RedisAccessor {
 	long dbSize();
 
 	String flushDB();
+
+	void destroy();
+
+	void init();
 
 }
