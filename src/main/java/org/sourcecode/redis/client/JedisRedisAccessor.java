@@ -8,6 +8,7 @@ import org.apache.juli.logging.LogFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.util.Pool;
 
 public class JedisRedisAccessor implements RedisAccessor {
 
@@ -15,7 +16,7 @@ public class JedisRedisAccessor implements RedisAccessor {
 
 	private JedisPoolConfig jedisPoolConfig;
 
-	private JedisPool jedisPool;
+	private Pool<Jedis> jedisPool;
 
 	private int database = 0;
 
@@ -157,18 +158,9 @@ public class JedisRedisAccessor implements RedisAccessor {
 		jedisPool = new JedisPool(jedisPoolConfig, host, port);
 	}
 
-	protected void returnJedis2Pool(Jedis jedis, boolean broken) {
-		if (broken) {
-			jedisPool.returnBrokenResource(jedis);
-		} else {
-			jedisPool.returnResource(jedis);
-		}
-	}
-
 	<T> T execute(JedisExecutor<T> jedisExecutor) {
 		Jedis jedis = null;
 		T t = null;
-		boolean broken = false;
 		try {
 			jedis = jedisPool.getResource();
 			long dbindex = jedis.getDB();
@@ -177,10 +169,11 @@ public class JedisRedisAccessor implements RedisAccessor {
 			}
 			t = jedisExecutor.execute(jedis);
 		} catch (Exception e) {
-			broken = true;
 			throw new RuntimeException("execute redis command fail " + e.getMessage());
 		} finally {
-			returnJedis2Pool(jedis, broken);
+			if (jedis != null) {
+				jedis.close();
+			}
 		}
 		return t;
 	}
@@ -198,11 +191,11 @@ public class JedisRedisAccessor implements RedisAccessor {
 		this.jedisPoolConfig = jedisPoolConfig;
 	}
 
-	public JedisPool getJedisPool() {
+	public Pool<Jedis> getJedisPool() {
 		return jedisPool;
 	}
 
-	public void setJedisPool(JedisPool jedisPool) {
+	public void setJedisPool(Pool<Jedis> jedisPool) {
 		this.jedisPool = jedisPool;
 	}
 
