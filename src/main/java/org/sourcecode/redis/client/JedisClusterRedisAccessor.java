@@ -95,7 +95,7 @@ public class JedisClusterRedisAccessor implements RedisAccessor {
 		return r;
 	}
 
-	public void init() {
+	public void init(String mode) {
 		String[] nodeList = nodes.split(",");
 		for (String node : nodeList) {
 			String[] hostPort = node.split(":");
@@ -159,7 +159,7 @@ public class JedisClusterRedisAccessor implements RedisAccessor {
 	public static void main(String[] args) {
 		String nodes = "172.16.97.5:7000,172.16.97.5:7001,172.16.97.10:7002,172.16.97.10:7003,172.16.97.18:7004,172.16.97.18:7005";
 		JedisClusterRedisAccessor jedis = new JedisClusterRedisAccessor(new DefaultJedisPoolConfig(), 6, 2000, nodes);
-		jedis.init();
+		jedis.init("");
 		String key = "testx";
 		String r = jedis.set(key.getBytes(), "1".getBytes(), 5);
 

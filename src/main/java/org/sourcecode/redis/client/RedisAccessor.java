@@ -26,6 +26,6 @@ public interface RedisAccessor {
 
 	void destroy();
 
-	void init();
+	void init(String mode);
 
 }

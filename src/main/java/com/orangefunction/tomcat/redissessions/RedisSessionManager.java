@@ -21,6 +21,7 @@ import org.sourcecode.redis.client.DefaultJedisPoolConfig;
 import org.sourcecode.redis.client.JedisClusterRedisAccessor;
 import org.sourcecode.redis.client.JedisRedisAccessor;
 import org.sourcecode.redis.client.RedisAccessor;
+import org.sourcecode.redis.client.RedisConstants;
 import org.sourcecode.tomcat.session.RedisSessionIdGenerator;
 
 import redis.clients.jedis.JedisPoolConfig;
@@ -52,7 +53,8 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	protected int database = 2;
 
 	// cluster
-	protected boolean cluster = false;
+	protected String mode = RedisConstants.MODE_SINGLE;
+	protected String masterName = RedisConstants.MATSER_NAME;
 	protected int maxRedirections = 8;
 	// redis
 	private RedisAccessor redisAccessor;
@@ -541,12 +543,12 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	private void initializeDatabaseConnection() throws LifecycleException {
 		try {
 
-			if (cluster) {
+			if (RedisConstants.MODE_CLUSTER.equals(mode)) {
 				redisAccessor = new JedisClusterRedisAccessor(connectionPoolConfig, maxRedirections, timeout, host);
 			} else {
-				redisAccessor = new JedisRedisAccessor(connectionPoolConfig, host, port, database);
+				redisAccessor = new JedisRedisAccessor(connectionPoolConfig, masterName, host, port, database);
 			}
-			redisAccessor.init();
+			redisAccessor.init(mode);
 
 			log.info("redis init success : database = " + database + ",maxWaitMillis = "
 					+ connectionPoolConfig.getMaxWaitMillis() + ",connectionPoolMaxTotal = "
@@ -558,7 +560,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 					+ connectionPoolConfig.getMinEvictableIdleTimeMillis() + ",TimeBetweenEvictionRunsMillis = "
 					+ connectionPoolConfig.getTimeBetweenEvictionRunsMillis() + ",TestWhileIdle = "
 					+ connectionPoolConfig.getTestWhileIdle() + ",sessionIdPrefix = " + sessionIdPrefix + ",host = "
-					+ host + ",maxRedirections = " + maxRedirections + ",cluster = " + cluster);
+					+ host + ",maxRedirections = " + maxRedirections + ",mode = " + mode);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error connecting to Redis", e);
@@ -746,12 +748,20 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 		this.maxRedirections = maxRedirections;
 	}
 
-	public boolean isCluster() {
-		return cluster;
+	public String getMode() {
+		return mode;
 	}
 
-	public void setCluster(boolean cluster) {
-		this.cluster = cluster;
+	public void setMode(String mode) {
+		this.mode = mode;
+	}
+
+	public String getMasterName() {
+		return masterName;
+	}
+
+	public void setMasterName(String masterName) {
+		this.masterName = masterName;
 	}
 
 }

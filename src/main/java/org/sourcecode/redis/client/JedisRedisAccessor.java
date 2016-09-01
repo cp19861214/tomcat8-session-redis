@@ -1,5 +1,7 @@
 package org.sourcecode.redis.client;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.juli.logging.Log;
@@ -8,6 +10,8 @@ import org.apache.juli.logging.LogFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.Protocol;
 import redis.clients.util.Pool;
 
 public class JedisRedisAccessor implements RedisAccessor {
@@ -24,15 +28,18 @@ public class JedisRedisAccessor implements RedisAccessor {
 
 	private int port;
 
+	private String masterName;
+
 	public JedisRedisAccessor() {
 
 	}
 
-	public JedisRedisAccessor(JedisPoolConfig jedisPoolConfig, String host, int port, int database) {
+	public JedisRedisAccessor(JedisPoolConfig jedisPoolConfig, String masterName, String host, int port, int database) {
 		this.jedisPoolConfig = jedisPoolConfig;
 		this.host = host;
 		this.port = port;
 		this.database = database;
+		this.masterName = masterName;
 	}
 
 	@Override
@@ -154,8 +161,17 @@ public class JedisRedisAccessor implements RedisAccessor {
 	}
 
 	@Override
-	public void init() {
-		jedisPool = new JedisPool(jedisPoolConfig, host, port);
+	public void init(String mode) {
+		if (RedisConstants.MODE_SINGLE.equals(mode)) {
+			jedisPool = new JedisPool(jedisPoolConfig, host, port, Protocol.DEFAULT_TIMEOUT, null, database);
+		} else {
+			jedisPool = new JedisSentinelPool(masterName, asSentinelSet(host), jedisPoolConfig,
+					Protocol.DEFAULT_TIMEOUT, null, database);
+		}
+	}
+
+	public static final Set<String> asSentinelSet(String sentinels) {
+		return new HashSet<>(Arrays.asList(sentinels.split(",")));
 	}
 
 	<T> T execute(JedisExecutor<T> jedisExecutor) {
@@ -207,9 +223,17 @@ public class JedisRedisAccessor implements RedisAccessor {
 		this.database = database;
 	}
 
+	public String getMasterName() {
+		return masterName;
+	}
+
+	public void setMasterName(String masterName) {
+		this.masterName = masterName;
+	}
+
 	public static void main(String[] args) {
-		RedisAccessor ra = new JedisRedisAccessor(new JedisPoolConfig(), "172.16.97.5", 6379, 3);
-		ra.init();
+		RedisAccessor ra = new JedisRedisAccessor(new JedisPoolConfig(), "mymaster", "172.16.97.5", 6379, 3);
+		ra.init("sentinel");
 		String key = "abc";
 		String result = ra.set(key.getBytes(), "a".getBytes(), 5);
 		byte[] value = ra.get(key.getBytes());
