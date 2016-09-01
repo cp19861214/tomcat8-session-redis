@@ -162,7 +162,7 @@ public class JedisRedisAccessor implements RedisAccessor {
 
 	@Override
 	public void init(String mode) {
-		if (RedisConstants.MODE_SINGLE.equals(mode)) {
+		if (RedisConstants.MODE_SIGNLE.equals(mode)) {
 			jedisPool = new JedisPool(jedisPoolConfig, host, port, Protocol.DEFAULT_TIMEOUT, null, database);
 		} else {
 			jedisPool = new JedisSentinelPool(masterName, asSentinelSet(host), jedisPoolConfig,

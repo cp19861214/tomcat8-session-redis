@@ -53,7 +53,7 @@ public class RedisSessionManager extends ManagerBase implements Lifecycle {
 	protected int database = 2;
 
 	// cluster
-	protected String mode = RedisConstants.MODE_SINGLE;
+	protected String mode = RedisConstants.MODE_SIGNLE;
 	protected String masterName = RedisConstants.MATSER_NAME;
 	protected int maxRedirections = 8;
 	// redis
