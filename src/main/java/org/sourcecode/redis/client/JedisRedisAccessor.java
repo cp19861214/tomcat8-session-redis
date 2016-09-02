@@ -185,7 +185,9 @@ public class JedisRedisAccessor implements RedisAccessor {
 			}
 			t = jedisExecutor.execute(jedis);
 		} catch (Exception e) {
-			throw new RuntimeException("execute redis command fail " + e.getMessage());
+			// throw new RuntimeException("execute redis command fail " +
+			// e.getMessage());
+			log.error("execute redis command fail", e);
 		} finally {
 			if (jedis != null) {
 				jedis.close();
