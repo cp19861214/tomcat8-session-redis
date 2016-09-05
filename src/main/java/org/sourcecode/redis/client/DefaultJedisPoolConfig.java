@@ -11,7 +11,7 @@ public class DefaultJedisPoolConfig extends JedisPoolConfig {
 		setTimeBetweenEvictionRunsMillis(30000);// 30秒检查一次
 		setNumTestsPerEvictionRun(3);// 每次回收的个数配置
 		setMaxTotal(300);// 最大连接数
-		setMaxIdle(10);// 最大空闲数
+		setMaxIdle(3);// 最大空闲数
 		setMinIdle(1);// 最小空闲数
 		setMaxWaitMillis(1000);
 	}
